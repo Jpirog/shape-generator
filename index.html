@@ -44,12 +44,30 @@
         background-color: dodgerBlue;
         transition: background-color 1s;
       }
+      h1{
+        float:left;
+      }
+      
+      h2{
+        clear: both;;
+      }
+      #smaller{
+        display: inline;
+        font-size: 65%;
+      }
     </style>
     <title>Shape Generator</title>
   </head>
   <body>
-    <h1><a href='index.html'>Shape Generator</a></h1>
-    <h2>Todos</h2>
+    <h1>
+        <a href='index.html'>Shape Generator</a>
+        <div id="smaller">
+          <span> </span><span id="circlecount">0</span><span> shapes displayed with an average size of </span>
+          <span id="avgsize">0</span>
+          <p id="totsize" hidden>0</p>
+        </div>
+    </h1>
+    <h2>Todos</h2></div>
     <ul>
       <li>Create a repo named shape-generator and add this index.html page</li>
       <li>Currently clicking on the center of a circle causes the center to disappear. This is a bug, the blue circle should disappear.</li>
@@ -68,7 +86,7 @@
     </ul>
     <a href='https://github.com/FullstackAcademy/shape-generator'>Repo</a>
     <form>
-      <input name='px' value='25'/>
+      <input name='px' value="26" type="number" min="26" max="249">
     </form>
     <div id='container'>
     </div>
@@ -79,21 +97,55 @@
       const container = document.querySelector('#container');
 
       container.addEventListener('click', (ev)=>{
-        if(!ev.target.id){
+        let valueDeleted;
+        if (ev.target.tagName === "SPAN"){
+          valueDeleted = parseInt(ev.target.innerText);
+          ev.target.parentNode.remove()
+        } else {
+          valueDeleted = parseInt(ev.target.firstChild.innerText);
           ev.target.parentNode.removeChild(ev.target);
         }
+
+        const totSize = parseInt(document.querySelector("#totsize").innerText) - valueDeleted;
+        const nbrCircles = parseInt(document.querySelector("#circlecount").innerText) - 1
+        document.querySelector("#totSize").innerText = totSize.toString();
+        document.querySelector("#circlecount").innerText = nbrCircles.toString()
+        if (nbrCircles === 0){
+          document.querySelector("#avgsize").innerText = "** not applicable till there is at least one circle **";
+        } else {
+          const avg = Math.round (totSize / nbrCircles);
+        document.querySelector("#avgsize").innerText = avg.toString();
+        }
+
       });
 
       const generateCircle = ()=> {
+        const savedInput = parseInt(input.value);  // save the original value for the average calculation
         const size = `${input.value}px`;
         const circle = document.createElement('div');
         circle.style.width = size;
         circle.style.height = size;
+        // randomly make it a square or circle
+        if (Math.random() < .5){
+          circle.style.borderRadius="0%"
+        } else {
+          circle.style.borderRadius="50%"
+        }
         container.appendChild(circle);
         const span = document.createElement('span');
         span.innerText = input.value;
         circle.appendChild(span);
-        input.value = 25 + Math.floor(Math.random()*50);
+        input.value = 26 + Math.floor(Math.random()*50);
+        // update the displayed count
+        const count = document.querySelector("#circlecount")
+        count.innerText = parseInt(count.innerText) + 1;
+        // update the total size and calculate the new average
+        const totSize = parseInt(document.querySelector("#totsize").innerText) + savedInput;
+        const avg = Math.round (totSize / parseInt(count.innerText));
+        document.querySelector("#totSize").innerText = totSize.toString();
+        document.querySelector("#avgsize").innerText = avg.toString();
+
+
         window.setTimeout(function(){
           circle.classList.add('blue');
         }, 500);
@@ -101,12 +153,18 @@
 
       form.addEventListener('submit', (ev)=> {
         ev.preventDefault();
+        if (input.value < 26 || input.value > 249){
+          alert('Numbers must be from 26-249 inclusive')
+        } else {
         generateCircle();
+      }
       });
 
       generateCircle();
       generateCircle();
       generateCircle();
+
+      document.querySelector("input").focus()
 
     </script>
   </body>
